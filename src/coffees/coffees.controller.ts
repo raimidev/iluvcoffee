@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseArrayPipe,
   Patch,
   Post,
   Query,
@@ -11,6 +12,7 @@ import {
 import { CoffeesService } from './coffees.service';
 import { CreateCoffeeDto } from './dto/create-coffee.dto';
 import { UpdateCoffeeDto } from './dto/update-coffee.dto';
+import { CreateFlavorDtoDto } from './dto/create-flavor.dto';
 
 @Controller('coffees')
 export class CoffeesController {
@@ -27,16 +29,19 @@ export class CoffeesController {
   }
 
   @Post()
-  create(@Body() createCoffeeDto: CreateCoffeeDto) {
+  create(
+    @Body()
+    createCoffeeDto: CreateCoffeeDto,
+  ) {
     return this.coffeesService.create(createCoffeeDto);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCoffeeDto: UpdateCoffeeDto) {
+  update(@Param('id') id: number, @Body() updateCoffeeDto: UpdateCoffeeDto) {
     return this.coffeesService.update(id, updateCoffeeDto);
   }
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: number) {
     return this.coffeesService.remove(id);
   }
 }

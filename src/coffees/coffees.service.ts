@@ -1,46 +1,79 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Coffee } from './entities/coffee.entity';
+import { CreateCoffeeDto } from './dto/create-coffee.dto';
+import { PrismaService } from '../prisma/prisma.service';
+import { FlavorsService } from './flavors.service';
+import { UpdateCoffeeDto } from './dto/update-coffee.dto';
 
 @Injectable()
 export class CoffeesService {
-  private coffees: Coffee[] = [
-    {
-      id: 1,
-      name: 'Shipwreck Roast',
-      brand: 'Buddy Brew',
-      flavors: ['chocolate', 'vanilla'],
-    },
-  ];
+  constructor(
+    private prisma: PrismaService,
+    private flavorsService: FlavorsService,
+  ) {}
 
   findAll() {
-    return this.coffees;
+    return this.prisma.coffee.findMany({ include: { flavors: true } });
   }
 
-  findOne(id: number) {
-    const coffee = this.coffees.find((item) => item.id === id);
+  async findOne(id: number) {
+    const coffee = await this.prisma.coffee.findUnique({
+      where: {
+        id: id,
+      },
+      include: {
+        flavors: true,
+      },
+    });
+
     if (!coffee) {
       throw new NotFoundException(`Coffee #${id} not found`);
     }
     return coffee;
   }
 
-  create(createCoffeeDto: any) {
-    this.coffees.push(createCoffeeDto);
-    return createCoffeeDto;
+  async create(createCoffeeDto: CreateCoffeeDto) {
+    const flavorNames = createCoffeeDto.flavors.map(
+      (createFlavorDto) => createFlavorDto.name,
+    );
+
+    const flavorsIds =
+      await this.flavorsService.preloadFlavorByName(flavorNames);
+
+    return this.prisma.coffee.create({
+      data: {
+        ...createCoffeeDto,
+        flavors: {
+          connect: [...flavorsIds],
+        },
+      },
+      include: { flavors: true },
+    });
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  update(id: number, updateCoffeeDto: any) {
-    const existingCoffee = this.findOne(id);
-    if (existingCoffee) {
-      // update the existing entity
-    }
+  async update(id: number, updateCoffeeDto: UpdateCoffeeDto) {
+    const flavorNames = updateCoffeeDto.flavors.map(
+      (createFlavorDto) => createFlavorDto.name,
+    );
+
+    const flavorsIds =
+      await this.flavorsService.preloadFlavorByName(flavorNames);
+
+    return this.prisma.coffee.update({
+      where: { id: id },
+      data: {
+        ...updateCoffeeDto,
+        flavors: {
+          set: [...flavorsIds],
+        },
+      },
+      include: { flavors: true },
+    });
   }
 
-  remove(id: string) {
-    const coffeeIndex = this.coffees.findIndex((item) => item.id === +id);
-    if (coffeeIndex >= 0) {
-      this.coffees.splice(coffeeIndex, 1);
-    }
+  remove(id: number) {
+    return this.prisma.coffee.delete({
+      where: { id: Number(id) },
+    });
   }
 }
