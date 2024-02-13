@@ -8,5 +8,6 @@ import { FlavorsService } from './flavors.service';
   controllers: [CoffeesController],
   providers: [CoffeesService, FlavorsService],
   imports: [PrismaModule],
+  exports: [CoffeesService],
 })
 export class CoffeesModule {}

@@ -3,6 +3,8 @@ import { CreateCoffeeDto } from './dto/create-coffee.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { FlavorsService } from './flavors.service';
 import { UpdateCoffeeDto } from './dto/update-coffee.dto';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { Coffee } from '@prisma/client';
 
 @Injectable()
 export class CoffeesService {
@@ -11,8 +13,12 @@ export class CoffeesService {
     private flavorsService: FlavorsService,
   ) {}
 
-  findAll() {
-    return this.prisma.coffee.findMany({ include: { flavors: true } });
+  findAll(paginationQuery: PaginationQueryDto) {
+    return this.prisma.coffee.findMany({
+      include: { flavors: true },
+      take: paginationQuery.limit,
+      skip: paginationQuery.offset,
+    });
   }
 
   async findOne(id: number) {
@@ -75,5 +81,29 @@ export class CoffeesService {
     return this.prisma.coffee.delete({
       where: { id: Number(id) },
     });
+  }
+
+  async recommendCoffee(coffee: Coffee) {
+    const test = await this.prisma.$transaction(async (tx) => {
+      coffee.recommendations++;
+      await tx.event.create({
+        data: {
+          name: 'recommend_coffee',
+          type: 'coffee',
+          payload: {
+            coffeeId: coffee.id,
+          },
+        },
+      });
+      await tx.coffee.update({
+        where: { id: coffee.id },
+        data: {
+          recommendations: coffee.recommendations,
+        },
+      });
+      return coffee;
+    });
+
+    return test;
   }
 }

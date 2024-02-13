@@ -15,6 +15,7 @@ model Coffee {
   name        String
   brand       String
   flavors     Flavor[]
+  recommendations Int  @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -24,6 +25,16 @@ model Flavor {
   id          Int      @id @default(autoincrement())
   name        String
   coffees     Coffee[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Event {
+@@map(name: "events")
+  id          Int      @id @default(autoincrement())
+  type        String
+  name        String
+  payload     Json
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

@@ -12,15 +12,16 @@ import {
 import { CoffeesService } from './coffees.service';
 import { CreateCoffeeDto } from './dto/create-coffee.dto';
 import { UpdateCoffeeDto } from './dto/update-coffee.dto';
-import { CreateFlavorDtoDto } from './dto/create-flavor.dto';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { Coffee } from '@prisma/client';
 
 @Controller('coffees')
 export class CoffeesController {
   constructor(private readonly coffeesService: CoffeesService) {}
   @Get()
-  findAll(@Query() paginationQuery) {
+  findAll(@Query() paginationQuery: PaginationQueryDto) {
     // const { limit, offset } = paginationQuery;
-    return this.coffeesService.findAll();
+    return this.coffeesService.findAll(paginationQuery);
   }
 
   @Get(':id')
@@ -43,5 +44,10 @@ export class CoffeesController {
   @Delete(':id')
   remove(@Param('id') id: number) {
     return this.coffeesService.remove(id);
+  }
+
+  @Post('recommend')
+  recommendCoffee(@Body() coffee: Coffee) {
+    return this.coffeesService.recommendCoffee(coffee);
   }
 }
