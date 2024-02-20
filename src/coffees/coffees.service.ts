@@ -1,16 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCoffeeDto } from './dto/create-coffee.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { FlavorsService } from './flavors.service';
 import { UpdateCoffeeDto } from './dto/update-coffee.dto';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { Coffee } from '@prisma/client';
+import { ConfigService, ConfigType } from '@nestjs/config';
+import coffeesConfig from './config/coffees.config';
 
 @Injectable()
 export class CoffeesService {
   constructor(
     private prisma: PrismaService,
     private flavorsService: FlavorsService,
+    @Inject(coffeesConfig.KEY)
+    private configService: ConfigType<typeof coffeesConfig>,
   ) {}
 
   findAll(paginationQuery: PaginationQueryDto) {
