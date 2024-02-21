@@ -36,7 +36,7 @@ export class CoffeesController {
   }
 
   @Post()
-  create(
+  async create(
     @Body()
     createCoffeeDto: CreateCoffeeDto,
   ) {

@@ -9,7 +9,7 @@ export class FlavorsService {
   async preloadFlavorByName(
     names: string | string[],
   ): Promise<{ id: number }[]> {
-    let newFlavors = [];
+    let newFlavors: string[] = [];
     let createdNewFlavors: Flavor[] = [];
     const existingFlavors = await this.prisma.flavor.findMany({
       where: {

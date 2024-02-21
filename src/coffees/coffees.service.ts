@@ -1,20 +1,16 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCoffeeDto } from './dto/create-coffee.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { FlavorsService } from './flavors.service';
 import { UpdateCoffeeDto } from './dto/update-coffee.dto';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { Coffee } from '@prisma/client';
-import { ConfigService, ConfigType } from '@nestjs/config';
-import coffeesConfig from './config/coffees.config';
 
 @Injectable()
 export class CoffeesService {
   constructor(
     private prisma: PrismaService,
     private flavorsService: FlavorsService,
-    @Inject(coffeesConfig.KEY)
-    private configService: ConfigType<typeof coffeesConfig>,
   ) {}
 
   findAll(paginationQuery: PaginationQueryDto) {
@@ -42,12 +38,13 @@ export class CoffeesService {
   }
 
   async create(createCoffeeDto: CreateCoffeeDto) {
-    const flavorNames = createCoffeeDto.flavors.map(
+    const flavorNames = createCoffeeDto.flavors?.map(
       (createFlavorDto) => createFlavorDto.name,
     );
 
-    const flavorsIds =
-      await this.flavorsService.preloadFlavorByName(flavorNames);
+    const flavorsIds = await this.flavorsService.preloadFlavorByName(
+      flavorNames || [],
+    );
 
     return this.prisma.coffee.create({
       data: {
@@ -62,12 +59,13 @@ export class CoffeesService {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async update(id: number, updateCoffeeDto: UpdateCoffeeDto) {
-    const flavorNames = updateCoffeeDto.flavors.map(
+    const flavorNames = updateCoffeeDto.flavors?.map(
       (createFlavorDto) => createFlavorDto.name,
     );
 
-    const flavorsIds =
-      await this.flavorsService.preloadFlavorByName(flavorNames);
+    const flavorsIds = await this.flavorsService.preloadFlavorByName(
+      flavorNames || [],
+    );
 
     return this.prisma.coffee.update({
       where: { id: id },
