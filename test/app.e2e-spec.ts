@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
+import prisma from '../client';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -15,7 +16,12 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET)', () => {
+  it('/ (GET)', async () => {
+    console.log(
+      await prisma.coffee.findMany(),
+      await prisma.coffee.findFirst(),
+      'wtf',
+    );
     return request(app.getHttpServer())
       .get('/')
       .set('Authorization', process.env.API_KEY ?? '')
